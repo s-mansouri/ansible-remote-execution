@@ -1,0 +1,17 @@
+---
+docker_version: '18.03'
+
+docker_bin_dir: /usr/bin
+
+docker_users: []
+
+docker_install_docker_compose: True
+
+docker_compose_version: "1.21.2"
+
+retry_stagger: 5
+
+# Debian docker-ce repo
+docker_debian_repo_base_url: "https://download.docker.com/linux/debian"
+docker_debian_repo_gpgkey: 'https://download.docker.com/linux/debian/gpg'
+docker_deb_version: docker-ce_18.03.1~ce-0~debian_amd64.deb
