@@ -1,0 +1,89 @@
+---
+block:
+  - name: apt update
+    apt:
+      update_cache: yes
+
+  - name: Download GitLab package repository script
+    get_url:
+      url: https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh
+      dest: /tmp/script.deb.sh
+      mode: +x
+
+  - name: Add GitLab package repository
+    shell: /tmp/script.deb.sh
+
+  - name: APT pinning
+    shell: |
+      cat > /etc/apt/preferences.d/pin-gitlab-runner.pref <<EOF
+      Explanation: Prefer GitLab provided packages over the Debian native ones
+      Package: gitlab-runner
+      Pin: origin packages.gitlab.com
+      Pin-Priority: 1001
+      EOF
+
+  - name: Install Gitlab Runner
+    apt:
+      name: gitlab-runner
+      state: present
+tags: ["gitlab-runner"]
+
+- name: Gitlab Runner register
+  shell:
+    "gitlab-runner register
+      --name {{ runner_name }} \
+      --non-interactive \
+      --url {{ gitlab_url }} \
+      --registration-token {{ registration_token }} \
+      --executor {{ executor }} \
+      --tag-list {{ tag_list }} \
+      --limit {{ limit }} \
+      --locked=false \
+      --docker-image docker:stable \
+      --docker-privileged \
+      --run-untagged=true"
+  tags: ["gitlab-runner", "register"]
+
+#- name: Gitlab Runner register Docker
+#  shell:
+#    "gitlab-runner register
+#      --name {{ runner_name }}-docker \
+#      --non-interactive \
+#      --url {{ gitlab_url }} \
+#      --registration-token {{ docker_registration_token }} \
+#      --executor docker \
+#      --tag-list {{ tag_list }} \
+#      --locked=false \
+#      --limit {{ limit }} \
+#      --docker-image mirror.imbco.ir:4000/library/docker:stable \
+#      --docker-volumes /var/run/docker.sock:/var/run/docker.sock
+#      --docker-privileged \
+#      --run-untagged=true"
+#  tags: ["gitlab-runner", "register-docker"]
+
+- name: Copy config
+  copy:
+    src: "files/gitlab_runner_config.toml"
+    dest: "~/config.toml"
+  tags: ["gitlab-runner"]
+
+- name: Download kubectl
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-release/release/v1.11.2/bin/linux/amd64/kubectl
+    dest: /usr/local/bin/kubectl
+    mode: +x
+  tags: ["gitlab-runner"]
+
+- name: Copy kubectl config
+  copy:
+    src: "files/config_runner"
+    dest: "/home/gitlab-runner/.config_runner"
+  tags: ["gitlab-runner"]
+
+- name: Unregister Runner
+  shell: "gitlab-runner unregister --name {{ runner_name }} "
+  tags: "unregister-runner"
+
+- name: Remove Runner
+  shell: "gitlab-runner verify --delete --name {{ runner_name }}"
+  tags: "remove-runner"

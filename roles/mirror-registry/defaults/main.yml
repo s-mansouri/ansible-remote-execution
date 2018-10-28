@@ -1,0 +1,3 @@
+---
+docker_compose_local_path: "docker-compose.yml.j2"
+docker_compose_remote_path: "/data/mirror_compose"

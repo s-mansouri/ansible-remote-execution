@@ -1,0 +1,28 @@
+---
+- name: Create directory
+  file:
+    path: "/data/mirror_compose"
+    state: directory
+  tags: mirror-registry
+
+- name: Uploud docker-compose
+  template:
+    src: "{{ docker_compose_local_path }}"
+    dest: "{{ docker_compose_remote_path }}/docker-compose.yml"
+  tags: mirror-registry
+
+- name: check auth exists
+  stat:
+    path: /data/mirror_compose/auth/htpasswd
+  register: file_details
+  tags: mirror-registry
+
+- name: generate password
+  shell: "mkdir /data/mirror_compose/auth; docker run --entrypoint htpasswd registry:2 -Bbn mirror OBywh3NrzvKUyA > /data/mirror_compose/auth/htpasswd"
+  when: file_details.stat.exists == False
+  tags: mirror-registry
+
+- name: start containers
+  docker_service:
+    project_src: '{{ docker_compose_remote_path }}'
+  tags: mirror-registry

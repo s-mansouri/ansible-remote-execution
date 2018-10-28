@@ -1,0 +1,30 @@
+---
+- name: Create directory
+  file:
+    path: "/etc/docker/certs.d/{{ domain }}"
+    state: directory
+  tags: harbor
+
+##TODO download harbor
+#- name: Uploud harbor
+#  unarchive:
+#    src: "files/harbor-online-installer-v1.5.1.tgz"
+#    dest: "/data/"
+#  tags: harbor
+#
+#- name: Uploud harbor configfile
+#  template:
+#    src: "harbor.cfg.j2"
+#    dest: "/data/harbor/harbor.cfg"
+#  tags: harbor
+#
+#- name: resolve harbor bug
+#  lineinfile:
+#    path: /data/harbor/prepare
+#    regexp: '.*\/C=\/ST=\/L=\/O=\/CN=\/.*'
+#    line: '    empty_subj = "/"'
+#  tags: harbor
+
+- name: Execute install.sh
+  shell: "/data/harbor/install.sh --with-clair"
+  tags: harbor

@@ -1,0 +1,18 @@
+registry:
+  restart: always
+  image: registry:2
+  ports:
+    - 4000:443
+  environment:
+    REGISTRY_HTTP_TLS_CERTIFICATE: /certs/fullchain1.pem
+    REGISTRY_HTTP_TLS_KEY: /certs/privkey1.pem
+    REGISTRY_AUTH: htpasswd
+    REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+    REGISTRY_AUTH_HTPASSWD_REALM: basic-realm
+    REGISTRY_HTTP_ADDR: :443
+    REGISTRY_PROXY_REMOTEURL: https://registry-1.docker.io
+
+  volumes:
+    - /data/mirror-registry:/var/lib/registry
+    - /etc/letsencrypt/archive/{{ domain }}:/certs
+    - /data/mirror_compose/auth:/auth

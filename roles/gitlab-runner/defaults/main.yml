@@ -1,0 +1,10 @@
+---
+gitlab_url:  https://gitlab.imbco.ir
+registration_token: 2wSAcL44Af8hz_pSa1-7
+docker_registration_token:
+description: shell-runner
+executor: shell
+tag_list: shell,builder,ci
+config_file:
+runner_name: imbco-ir-runner
+limit: 2

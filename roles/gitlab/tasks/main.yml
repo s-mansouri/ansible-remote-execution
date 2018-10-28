@@ -1,0 +1,39 @@
+---
+
+- name: reconfigure gitlab
+  shell: gitlab-ctl reconfigure
+  tags: ["gitlab-https"]
+
+- name: apt update
+  apt:
+    update_cache: yes
+  tags: ["gitlab"]
+
+- name: Update repositories and install necessary dependencies
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - curl
+    - openssh-server
+    - ca-certificates
+  tags: ["gitlab"]
+
+- name: Download GitLab package repository script
+  get_url:
+    url: https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh
+    dest: /tmp/script.deb.sh
+    mode: +x
+  tags: ["gitlab"]
+
+- name: Add GitLab package repository
+  shell: /tmp/script.deb.sh
+  tags: ["gitlab"]
+
+- name: Install Gitlab
+  apt:
+    name: gitlab-ce
+    state: present
+  environment:
+    EXTERNAL_URL: "{{ domain }}"
+  tags: ["gitlab"]
